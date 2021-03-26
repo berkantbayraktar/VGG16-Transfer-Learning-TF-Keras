@@ -84,7 +84,6 @@ def extend_network(base_model, number_of_class):
     fc_3 = layers.Dense(number_of_class, activation='softmax', name='predictions')
 
     # create new model object
-
     new_model = models.Sequential(name="new_model")
 
     # add prediction layers to new model object
@@ -108,7 +107,8 @@ def data_generator(network_size):
         width_shift_range=0.1,
         height_shift_range=0.1,
         vertical_flip=True,
-        rotation_range=20
+        rotation_range=20,
+        rescale=1. / 255
     )
     return generator
 
@@ -119,7 +119,6 @@ def train_generator(data_generator, path, network_size):
         batch_size=32,
         target_size=network_size
     )
-
     return train_gen
 
 
@@ -155,7 +154,7 @@ if __name__ == "__main__":
     number_of_classes = 131
 
     # with include_top = False, you can pull just CNNs not FC layers. We use VGG19 as backbone
-    base_model = VGG19(weights="imagenet", include_top=False, input_shape= (100,100,3))
+    base_model = VGG19(weights="imagenet", include_top=False, input_shape=(100, 100, 3))
     base_model.summary()
 
     # extend the network with FC layers
