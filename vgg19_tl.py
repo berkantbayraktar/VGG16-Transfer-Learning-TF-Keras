@@ -9,7 +9,7 @@ from tensorflow.keras import preprocessing
 from tensorflow.keras.applications.vgg19 import VGG19
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os
 '''
 Layer (type)                 Output Shape              Param #   
 =================================================================
@@ -103,38 +103,76 @@ def extend_network(base_model, number_of_class):
     return new_model
 
 
-def plot_trainset(x_train, x_test):
-    print('Train: X=%s, y=%s' % (x_train.shape, x_train.shape))
-    print('Test: X=%s, y=%s' % (x_test.shape, x_test.shape))
-    # plot first few images
-    for i in range(9):
-        # define subplot
-        plt.subplot(330 + 1 + i)
-        # plot raw pixel data
-        plt.imshow(x_train[i], cmap=plt.get_cmap('gray'))
-    # show the figure
+def data_generator(network_size):
+    generator = preprocessing.image.ImageDataGenerator(
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        vertical_flip=True,
+        rotation_range=20
+    )
+    return generator
+
+
+def train_generator(data_generator, path, network_size):
+    train_gen = data_generator.flow_from_directory(
+        path,
+        batch_size=32,
+        target_size=network_size
+    )
+
+    return train_gen
+
+
+def test_generator(data_generator, path, network_size):
+    test_gen = data_generator.flow_from_directory(
+        path,
+        batch_size=32,
+        target_size=network_size
+    )
+
+    return test_gen
+
+
+def plot_graphs(res):
+    # loss
+    plt.plot(res.history['loss'], label='train loss')
+    plt.plot(res.history['val_loss'], label='val loss')
+    plt.legend()
+    plt.show()
+
+    # accuracies
+    plt.plot(res.history['accuracy'], label='train acc')
+    plt.plot(res.history['val_accuracy'], label='val acc')
+    plt.legend()
     plt.show()
 
 
-class VGG16:
-    def __init__(self, number_of_classes):
-        self.model = None
-        self.number_of_classes = number_of_classes
-        pass
-
-    def create_model(self):
-        pass
-
-
 if __name__ == "__main__":
+    # network size
+    network_size = (100, 100)
+
+    # number of classes
+    number_of_classes = 131
 
     # with include_top = False, you can pull just CNNs not FC layers. We use VGG19 as backbone
     base_model = VGG19(weights="imagenet", include_top=False, input_shape= (100,100,3))
     base_model.summary()
 
     # extend the network with FC layers
-    new_model = extend_network(base_model=base_model, number_of_class=131)
+    new_model = extend_network(base_model=base_model, number_of_class=number_of_classes)
     new_model.summary()
 
-    #model.predict()
-    #plot_trainset(x_train, y_train)
+    data_gen = data_generator(network_size)
+    # get current path
+    cwd = os.getcwd()
+
+    train_gen = train_generator(data_gen, os.path.join(cwd, "data/fruits-360/Training"), network_size)
+    test_gen = test_generator(data_gen, os.path.join(cwd, "data/fruits-360/Test"), network_size)
+
+    res = new_model.fit_generator(
+        generator=train_gen,
+        validation_data=test_gen,
+        epochs=10
+    )
+
+    plot_graphs(res)
