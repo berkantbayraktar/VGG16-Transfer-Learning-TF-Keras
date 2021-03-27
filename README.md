@@ -11,7 +11,31 @@ cuda = 10.0
 cudnn = 7.6.5
 
 # Environment Setup
+
+1- Setup your python environment
+
+```
 conda env create -f environment.yml
+```
+
+2- You can download Kaggle Fruit360 Dataset from [here](https://www.kaggle.com/moltean/fruits) . Note that the dataset includes 131 different classes. 
+
+3- Put the dataset to the project folder shown as below
+
+    └── VGG19-Transfer-Learning-TF-Keras
+        
+        └── data
+            
+            └── fruits-360
+                
+                ├── papers
+                
+                ├── Test
+                
+                ├── test-multiple_fruits
+                
+                └── Training
+# Training Results
 
 ## Loss Graph: 
 
